@@ -1,0 +1,33 @@
+pipeline {
+  agent any
+  stages {
+   stage('Create blue kubernetes cluster') {
+   steps {
+    withAWS(region:'us-west-2', credentials:'aws-static') {
+     sh '''
+      eksctl create cluster \
+      --name prodteblue \
+      --version 1.13 \
+      --nodegroup-name standard-workers \
+      --node-type t3.medium \
+      --nodes 2 \
+      --nodes-min 1 \
+      --nodes-max 4 \
+      --node-ami auto \
+      --ssh-access=true \
+      --ssh-public-key=pipeline
+      
+      
+     '''
+    }
+   }
+  }
+  stage('Generate Config Files for Blue') {
+      steps{
+        sh " aws eks --region us-west-2 update-kubeconfig --name prodteblue"
+      }
+    }
+  
+    
+  }
+}
